@@ -1,3 +1,4 @@
+// FIX: Removed self-import of enums, which was causing declaration conflicts.
 
 export enum TraditionalKarateRank {
   WHITE = "Branca",
@@ -59,8 +60,11 @@ export interface Student {
   dojo: string;
   observations: string;
   traditionalKarateRank: TraditionalKarateRank;
+  traditionalKarateDegree: number;
   contactKarateRank: ContactKarateRank;
+  contactKarateDegree: number;
   jiuJitsuRank: JiuJitsuRank;
+  jiuJitsuDegree: number;
 }
 
 export interface AdminUser {

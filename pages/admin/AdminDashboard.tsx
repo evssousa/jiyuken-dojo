@@ -7,6 +7,8 @@ interface AdminDashboardProps {
   students: Student[];
   onRegisterNew: () => void;
   onViewStudent: (student: Student) => void;
+  onEditStudent: (student: Student) => void;
+  onManageDojos: () => void;
 }
 
 // Helper function to determine payment status
@@ -44,7 +46,7 @@ const NewUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6
 const RankIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-6.75c-.622 0-1.125.504-1.125 1.125V18.75m9 0h-9" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 13.5l3-3m0 0l3 3m-3-3v12" /></svg>;
 const PaymentIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h6m3-5.25H21a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75v-2.25a.75.75 0 01.75-.75z" /></svg>;
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew, onViewStudent }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew, onViewStudent, onEditStudent, onManageDojos }) => {
   const processedData = useMemo(() => {
     if (!students) return null;
 
@@ -110,15 +112,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
         <h2 className="text-3xl font-heading tracking-wider text-gray-900">Painel do Administrador</h2>
-        <button
-          onClick={onRegisterNew}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out flex items-center shadow-sm"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
-          <span>Cadastrar Aluno</span>
-        </button>
+        <div className="flex items-center gap-x-4">
+          <button
+            onClick={onManageDojos}
+            className="bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out flex items-center shadow-sm border border-gray-300"
+          >
+            <DojoIcon />
+            <span className="ml-2">Gerenciar Dojos</span>
+          </button>
+          <button
+            onClick={onRegisterNew}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out flex items-center shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+            <span>Cadastrar Aluno</span>
+          </button>
+        </div>
       </div>
 
       {/* Dashboard Stats Grid */}
@@ -201,9 +212,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.dojo}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
                     <div className="flex flex-col space-y-1">
-                      <div><span className="font-semibold">KT:</span> {student.traditionalKarateRank}</div>
-                      <div><span className="font-semibold">KC:</span> {student.contactKarateRank}</div>
-                      <div><span className="font-semibold">JJ:</span> {student.jiuJitsuRank}</div>
+                      <div><span className="font-semibold">KT:</span> {student.traditionalKarateRank} ({student.traditionalKarateDegree}º G)</div>
+                      <div><span className="font-semibold">KC:</span> {student.contactKarateRank} ({student.contactKarateDegree}º G)</div>
+                      <div><span className="font-semibold">JJ:</span> {student.jiuJitsuRank} ({student.jiuJitsuDegree}º G)</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -211,7 +222,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
                       {student.paymentStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                    <button onClick={() => onEditStudent(student)} className="font-semibold text-gray-600 hover:text-gray-900 transition-colors duration-150">Editar</button>
                     <button onClick={() => onViewStudent(student)} className="font-semibold text-red-600 hover:text-red-800 transition-colors duration-150">Ver Detalhes</button>
                   </td>
                 </tr>

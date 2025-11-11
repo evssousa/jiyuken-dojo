@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Student } from '../../types';
-import { TraditionalKarateRank, ContactKarateRank, JiuJitsuRank, Gender, StudentStatus } from '../../types';
 import { 
   TRADITIONAL_KARATE_RANKS, 
   CONTACT_KARATE_RANKS, 
@@ -13,8 +12,9 @@ import {
 } from '../../constants';
 import Card from '../../components/common/Card';
 
-interface RegisterStudentPageProps {
-  onRegister: (student: Omit<Student, 'id'>) => void;
+interface EditStudentPageProps {
+  student: Student;
+  onUpdate: (student: Student) => void;
   onCancel: () => void;
   dojos: string[];
 }
@@ -27,35 +27,9 @@ const fileToBase64 = (file: File): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
-const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, onCancel, dojos }) => {
-  const [formData, setFormData] = useState<Omit<Student, 'id'>>({
-    username: '',
-    password: '',
-    status: StudentStatus.ACTIVE,
-    fullName: '',
-    birthDate: '',
-    gender: Gender.MALE,
-    photo: null,
-    internalRegistry: '',
-    enrollmentDate: new Date().toISOString().split('T')[0],
-    contactPhone: '',
-    dojo: dojos[0] || '',
-    observations: '',
-    traditionalKarateRank: TraditionalKarateRank.WHITE,
-    traditionalKarateDegree: 0,
-    contactKarateRank: ContactKarateRank.WHITE,
-    contactKarateDegree: 0,
-    jiuJitsuRank: JiuJitsuRank.WHITE,
-    jiuJitsuDegree: 0,
-  });
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Set default dojo if the list is available
-    if (dojos && dojos.length > 0 && !formData.dojo) {
-      setFormData(prev => ({...prev, dojo: dojos[0]}));
-    }
-  }, [dojos, formData.dojo]);
+const EditStudentPage: React.FC<EditStudentPageProps> = ({ student, onUpdate, onCancel, dojos }) => {
+  const [formData, setFormData] = useState<Student>(student);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(student.photo);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -74,12 +48,12 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onRegister(formData);
+    onUpdate(formData);
   };
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-      <h2 className="text-3xl font-heading tracking-wider text-gray-900 mb-6">Cadastrar Novo Aluno</h2>
+      <h2 className="text-3xl font-heading tracking-wider text-gray-900 mb-6">Editar Aluno</h2>
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section: Credentials & Status */}
@@ -88,11 +62,11 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
             <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
               <div className="sm:col-span-2">
                 <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Usuário</label>
-                <input type="text" name="username" id="username" required onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                <input type="text" name="username" id="username" required value={formData.username} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
               </div>
               <div className="sm:col-span-2">
-                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Senha</label>
-                <input type="password" name="password" id="password" required onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Nova Senha</label>
+                <input type="password" name="password" id="password" onChange={handleChange} placeholder="Deixe em branco para não alterar" className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
               </div>
               <div className="sm:col-span-2">
                 <label htmlFor="status" className="block text-sm font-medium leading-6 text-gray-900">Status</label>
@@ -109,11 +83,11 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
             <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
                 <div className="sm:col-span-4">
                     <label htmlFor="fullName" className="block text-sm font-medium leading-6 text-gray-900">Nome Completo</label>
-                    <input type="text" name="fullName" id="fullName" required onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                    <input type="text" name="fullName" id="fullName" required value={formData.fullName} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
                 </div>
                 <div className="sm:col-span-2">
                     <label htmlFor="birthDate" className="block text-sm font-medium leading-6 text-gray-900">Data de Nascimento</label>
-                    <input type="date" name="birthDate" id="birthDate" required onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                    <input type="date" name="birthDate" id="birthDate" required value={formData.birthDate} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
                 </div>
                 <div className="sm:col-span-2">
                     <label htmlFor="gender" className="block text-sm font-medium leading-6 text-gray-900">Sexo</label>
@@ -137,7 +111,7 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
             <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
                 <div className="sm:col-span-2">
                     <label htmlFor="internalRegistry" className="block text-sm font-medium leading-6 text-gray-900">Registro Interno</label>
-                    <input type="text" name="internalRegistry" id="internalRegistry" required onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                    <input type="text" name="internalRegistry" id="internalRegistry" required value={formData.internalRegistry} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
                 </div>
                 <div className="sm:col-span-2">
                     <label htmlFor="enrollmentDate" className="block text-sm font-medium leading-6 text-gray-900">Data da Matrícula</label>
@@ -151,11 +125,11 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
                 </div>
                 <div className="sm:col-span-3">
                     <label htmlFor="contactPhone" className="block text-sm font-medium leading-6 text-gray-900">Telefone de Contato</label>
-                    <input type="tel" name="contactPhone" id="contactPhone" required onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                    <input type="tel" name="contactPhone" id="contactPhone" required value={formData.contactPhone} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
                 </div>
                 <div className="sm:col-span-full">
                     <label htmlFor="observations" className="block text-sm font-medium leading-6 text-gray-900">Observações</label>
-                    <textarea id="observations" name="observations" rows={3} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
+                    <textarea id="observations" name="observations" rows={3} value={formData.observations} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"/>
                 </div>
             </div>
           </div>
@@ -211,7 +185,8 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
 
           <div className="pt-6 flex items-center justify-end gap-x-4 border-t border-gray-200 mt-6">
             <button type="button" onClick={onCancel} className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Cancelar</button>
-            <button type="submit" className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Salvar Aluno</button>
+            <button type="submit" className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Salvar Alterações</button>
+
           </div>
         </form>
       </Card>
@@ -219,4 +194,4 @@ const RegisterStudentPage: React.FC<RegisterStudentPageProps> = ({ onRegister, o
   );
 };
 
-export default RegisterStudentPage;
+export default EditStudentPage;

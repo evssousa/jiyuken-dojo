@@ -62,15 +62,18 @@ const StudentProfilePage: React.FC<StudentProfilePageProps> = ({ student, onBack
               <dd className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-gray-800 rounded-lg p-4 text-center flex flex-col justify-between shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
                     <p className="font-bold text-gray-200 tracking-wide">Karate Tradicional</p>
-                    <p className="text-4xl font-heading text-red-500 my-2 tracking-wider">{student.traditionalKarateRank}</p>
+                    <p className="text-3xl font-heading text-red-500 my-2 tracking-wider">{student.traditionalKarateRank}</p>
+                    <p className="font-semibold text-sm text-gray-400">{student.traditionalKarateDegree}º Grau</p>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-4 text-center flex flex-col justify-between shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
                     <p className="font-bold text-gray-200 tracking-wide">Karate de Contato</p>
-                    <p className="text-4xl font-heading text-red-500 my-2 tracking-wider">{student.contactKarateRank}</p>
+                    <p className="text-3xl font-heading text-red-500 my-2 tracking-wider">{student.contactKarateRank}</p>
+                    <p className="font-semibold text-sm text-gray-400">{student.contactKarateDegree}º Grau</p>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-4 text-center flex flex-col justify-between shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
                     <p className="font-bold text-gray-200 tracking-wide">Jiu-Jitsu</p>
-                    <p className="text-4xl font-heading text-red-500 my-2 tracking-wider">{student.jiuJitsuRank}</p>
+                    <p className="text-3xl font-heading text-red-500 my-2 tracking-wider">{student.jiuJitsuRank}</p>
+                    <p className="font-semibold text-sm text-gray-400">{student.jiuJitsuDegree}º Grau</p>
                 </div>
               </dd>
             </div>
