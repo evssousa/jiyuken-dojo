@@ -1,34 +1,13 @@
-// FIX: Removed self-import of enums, which was causing declaration conflicts.
+// types.ts
 
-export enum TraditionalKarateRank {
+export enum AllRanks {
   WHITE = "Branca",
+  GRAY = "Cinza",
+  BLUE = "Azul",
   YELLOW = "Amarela",
   RED = "Vermelha",
   ORANGE = "Laranja",
   GREEN = "Verde",
-  PURPLE = "Roxa",
-  BROWN = "Marrom",
-  BLACK = "Preta",
-}
-
-export enum ContactKarateRank {
-  WHITE = "Branca",
-  YELLOW = "Amarela",
-  ORANGE = "Laranja",
-  GREEN = "Verde",
-  BLUE = "Azul",
-  PURPLE = "Roxa",
-  BROWN = "Marrom",
-  BLACK = "Preta",
-}
-
-export enum JiuJitsuRank {
-  WHITE = "Branca",
-  GRAY = "Cinza",
-  YELLOW = "Amarela",
-  ORANGE = "Laranja",
-  GREEN = "Verde",
-  BLUE = "Azul",
   PURPLE = "Roxa",
   BROWN = "Marrom",
   BLACK = "Preta",
@@ -45,6 +24,23 @@ export enum StudentStatus {
   INACTIVE = "Inativo",
 }
 
+export interface MartialArt {
+  id: number;
+  name: string;
+  ranks: string[];
+  usesDegrees: boolean;
+  maxDegrees: number;
+  promotionRequirements: Record<string, number>;
+}
+
+export interface StudentGraduation {
+  martialArtId: number;
+  rank: string;
+  degree: number;
+  promotionDate: string; // Date of last promotion (degree or rank)
+  rankStartDate: string; // Date when the current rank was achieved
+}
+
 export interface Student {
   id: number;
   username: string;
@@ -59,12 +55,8 @@ export interface Student {
   contactPhone: string;
   dojo: string;
   observations: string;
-  traditionalKarateRank: TraditionalKarateRank;
-  traditionalKarateDegree: number;
-  contactKarateRank: ContactKarateRank;
-  contactKarateDegree: number;
-  jiuJitsuRank: JiuJitsuRank;
-  jiuJitsuDegree: number;
+  graduations: StudentGraduation[];
+  attendance: { date: string; martialArtId: number }[];
 }
 
 export interface AdminUser {

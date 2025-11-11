@@ -1,9 +1,11 @@
 import React from 'react';
-import type { Student } from '../../types';
+import type { Student, MartialArt } from '../../types';
 import Card from '../../components/common/Card';
+import { getRankColorStyle } from '../../utils/colorUtils';
 
 interface StudentProfilePageProps {
   student: Student;
+  martialArts: MartialArt[];
   onBack?: () => void; // Optional back button for admin view
 }
 
@@ -14,7 +16,7 @@ const InfoItem: React.FC<{ label: string; value: React.ReactNode }> = ({ label, 
   </div>
 );
 
-const StudentProfilePage: React.FC<StudentProfilePageProps> = ({ student, onBack }) => {
+const StudentProfilePage: React.FC<StudentProfilePageProps> = ({ student, martialArts, onBack }) => {
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
       {onBack && (
@@ -60,21 +62,37 @@ const StudentProfilePage: React.FC<StudentProfilePageProps> = ({ student, onBack
             <div className="bg-white p-6">
               <dt className="text-xl font-heading tracking-wider text-gray-800 mb-4">Graduações</dt>
               <dd className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gray-800 rounded-lg p-4 text-center flex flex-col justify-between shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <p className="font-bold text-gray-200 tracking-wide">Karate Tradicional</p>
-                    <p className="text-3xl font-heading text-red-500 my-2 tracking-wider">{student.traditionalKarateRank}</p>
-                    <p className="font-semibold text-sm text-gray-400">{student.traditionalKarateDegree}º Grau</p>
-                </div>
-                <div className="bg-gray-800 rounded-lg p-4 text-center flex flex-col justify-between shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <p className="font-bold text-gray-200 tracking-wide">Karate de Contato</p>
-                    <p className="text-3xl font-heading text-red-500 my-2 tracking-wider">{student.contactKarateRank}</p>
-                    <p className="font-semibold text-sm text-gray-400">{student.contactKarateDegree}º Grau</p>
-                </div>
-                <div className="bg-gray-800 rounded-lg p-4 text-center flex flex-col justify-between shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <p className="font-bold text-gray-200 tracking-wide">Jiu-Jitsu</p>
-                    <p className="text-3xl font-heading text-red-500 my-2 tracking-wider">{student.jiuJitsuRank}</p>
-                    <p className="font-semibold text-sm text-gray-400">{student.jiuJitsuDegree}º Grau</p>
-                </div>
+                {student.graduations.map(grad => {
+                  const martialArt = martialArts.find(ma => ma.id === grad.martialArtId);
+                  if (!martialArt) return null;
+                  const attendedClassesInRank = student.attendance.filter(a => 
+                    a.martialArtId === martialArt.id && new Date(a.date) >= new Date(grad.rankStartDate)
+                  ).length;
+                  const requiredClasses = martialArt.promotionRequirements[grad.rank] || 0;
+                  const isLastRank = martialArt.ranks.indexOf(grad.rank) === martialArt.ranks.length - 1;
+
+                  return (
+                     <div key={martialArt.id} className="bg-white rounded-lg p-4 text-center flex flex-col justify-between shadow-lg border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <div>
+                            <p className="font-bold text-gray-800 tracking-wide">{martialArt.name}</p>
+                            <p className="text-3xl font-heading text-gray-900 my-2 tracking-wider">{grad.rank}</p>
+                             <div 
+                                className="w-full h-4 rounded-md my-2 mx-auto"
+                                style={getRankColorStyle(grad.rank)}
+                            ></div>
+                        </div>
+                        {martialArt.usesDegrees && <p className="font-semibold text-sm text-gray-500 mt-2">{grad.degree}º Grau</p>}
+                        <div className="mt-3 border-t pt-3 text-left space-y-1">
+                            <p className="text-xs text-gray-600">
+                                <span className="font-semibold">Aulas frequentadas:</span> {attendedClassesInRank}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                                <span className="font-semibold">Mínimo para Próxima Faixa:</span> {isLastRank ? '-' : requiredClasses}
+                            </p>
+                        </div>
+                    </div>
+                  );
+                })}
               </dd>
             </div>
           </dl>

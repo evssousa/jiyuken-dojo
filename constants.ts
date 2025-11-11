@@ -1,11 +1,7 @@
-import { TraditionalKarateRank, ContactKarateRank, JiuJitsuRank, Gender, StudentStatus } from './types';
+import { AllRanks, Gender, StudentStatus } from './types';
 
-export const TRADITIONAL_KARATE_RANKS = Object.values(TraditionalKarateRank);
-export const CONTACT_KARATE_RANKS = Object.values(ContactKarateRank);
-export const JIU_JITSU_RANKS = Object.values(JiuJitsuRank);
+export const ALL_RANKS = Object.values(AllRanks);
 export const GENDERS = Object.values(Gender);
 export const STATUSES = Object.values(StudentStatus);
 
-export const TRADITIONAL_KARATE_DEGREES = [0, 1, 2];
-export const CONTACT_KARATE_DEGREES = [0, 1, 2];
-export const JIU_JITSU_DEGREES = [0, 1, 2, 3, 4];
+export const MAX_DEGREES = Array.from({ length: 11 }, (_, i) => i); // 0 to 10

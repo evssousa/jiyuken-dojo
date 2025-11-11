@@ -1,14 +1,19 @@
 import React, { useMemo } from 'react';
-import type { Student } from '../../types';
+import type { Student, MartialArt, StudentGraduation } from '../../types';
 import StatCard from '../../components/common/StatCard';
-import { TRADITIONAL_KARATE_RANKS, CONTACT_KARATE_RANKS, JIU_JITSU_RANKS } from '../../constants';
+import { getRankColorStyle } from '../../utils/colorUtils';
 
 interface AdminDashboardProps {
   students: Student[];
+  martialArts: MartialArt[];
   onRegisterNew: () => void;
   onViewStudent: (student: Student) => void;
   onEditStudent: (student: Student) => void;
+  onDeleteStudent: (studentId: number) => void;
   onManageDojos: () => void;
+  onManageMartialArts: () => void;
+  onManageAttendance: () => void;
+  onPromoteStudent: (studentId: number, martialArtId: number) => void;
 }
 
 // Helper function to determine payment status
@@ -43,10 +48,12 @@ const GenderIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 
 const DojoIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>;
 const BirthdayIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 15.75a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM19.5 15.75a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM14.25 8.25a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM12 3.75a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75V3.75z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM9.75 8.25a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM9.75 12.75a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM15 12.75a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM4.5 19.5h15a2.25 2.25 0 002.25-2.25V7.5a2.25 2.25 0 00-2.25-2.25H4.5A2.25 2.25 0 002.25 7.5v9.75A2.25 2.25 0 004.5 19.5z" /></svg>;
 const NewUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>;
-const RankIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-6.75c-.622 0-1.125.504-1.125 1.125V18.75m9 0h-9" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 13.5l3-3m0 0l3 3m-3-3v12" /></svg>;
+const PromotionIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 21.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>;
 const PaymentIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h6m3-5.25H21a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75v-2.25a.75.75 0 01.75-.75z" /></svg>;
+const MartialArtIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" /></svg>
+const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew, onViewStudent, onEditStudent, onManageDojos }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, martialArts, onRegisterNew, onViewStudent, onEditStudent, onDeleteStudent, onManageDojos, onManageMartialArts, onManageAttendance, onPromoteStudent }) => {
   const processedData = useMemo(() => {
     if (!students) return null;
 
@@ -79,12 +86,47 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
 
     const paymentsDue = studentsWithPaymentStatus.filter(s => s.paymentStatus === 'Pendente');
 
-    const createRankCounter = (rankType: keyof Student) => 
-      students.reduce((acc, student) => {
-          const rank = student[rankType] as string;
-          if(rank) acc[rank] = (acc[rank] || 0) + 1;
-          return acc;
-      }, {} as Record<string, number>);
+    const promotableStudents: { student: Student, martialArt: MartialArt, currentGraduation: StudentGraduation }[] = [];
+
+    students.forEach(student => {
+        if (student.status !== 'Ativo') return;
+
+        student.graduations.forEach(grad => {
+            const martialArt = martialArts.find(ma => ma.id === grad.martialArtId);
+            if (!martialArt) return;
+
+            const currentRankIndex = martialArt.ranks.indexOf(grad.rank);
+            const isAtMaxRank = currentRankIndex === martialArt.ranks.length - 1;
+            const isAtMaxDegree = martialArt.usesDegrees && grad.degree === martialArt.maxDegrees;
+
+            if (isAtMaxRank && (!martialArt.usesDegrees || isAtMaxDegree)) {
+                return; // Already at the highest possible promotion
+            }
+
+            const attendedClassesSincePromotion = student.attendance.filter(a => 
+                a.martialArtId === grad.martialArtId && new Date(a.date) > new Date(grad.promotionDate)
+            ).length;
+
+            const requiredClassesForRank = martialArt.promotionRequirements[grad.rank] || 0;
+            if(requiredClassesForRank === 0) return;
+
+            let requiredClassesForNextStep = requiredClassesForRank;
+
+            if (martialArt.usesDegrees) {
+                const classesPerDegree = Math.floor(requiredClassesForRank / (martialArt.maxDegrees + 1));
+                requiredClassesForNextStep = classesPerDegree;
+            }
+
+            if (attendedClassesSincePromotion >= requiredClassesForNextStep) {
+                promotableStudents.push({
+                    student: student,
+                    martialArt: martialArt,
+                    currentGraduation: grad
+                });
+            }
+        });
+    });
+
 
     return {
         totalStudents: students.length,
@@ -95,12 +137,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
         upcomingBirthdays,
         paymentsDue,
         latestEnrollments: [...students].sort((a, b) => new Date(b.enrollmentDate).getTime() - new Date(a.enrollmentDate).getTime()).slice(0, 5),
-        traditionalKarateRanks: createRankCounter('traditionalKarateRank'),
-        contactKarateRanks: createRankCounter('contactKarateRank'),
-        jiuJitsuRanks: createRankCounter('jiuJitsuRank'),
         studentsWithPaymentStatus,
+        promotableStudents,
     };
-  }, [students]);
+  }, [students, martialArts]);
 
   if (!processedData) return null; // Or a loading state
   
@@ -111,16 +151,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
       <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
         <h2 className="text-3xl font-heading tracking-wider text-gray-900">Painel do Administrador</h2>
-        <div className="flex items-center gap-x-4">
+        <div className="flex items-center gap-x-4 flex-wrap gap-y-2">
+           <button
+            onClick={onManageAttendance}
+            className="bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out flex items-center shadow-sm border border-gray-300"
+          >
+            <CalendarIcon />
+            <span className="ml-2">Registrar Frequência</span>
+          </button>
+           <button
+            onClick={onManageMartialArts}
+            className="bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out flex items-center shadow-sm border border-gray-300"
+          >
+            <MartialArtIcon />
+            <span className="ml-2">Artes Marciais</span>
+          </button>
           <button
             onClick={onManageDojos}
             className="bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out flex items-center shadow-sm border border-gray-300"
           >
             <DojoIcon />
-            <span className="ml-2">Gerenciar Dojos</span>
+            <span className="ml-2">Dojos</span>
           </button>
           <button
             onClick={onRegisterNew}
@@ -150,28 +204,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
           <StatCard title="Dojos" icon={<DojoIcon />}>
               {Object.keys(processedData.dojoCounts).length > 0 ? Object.entries(processedData.dojoCounts).map(([dojo, count]) => <div key={dojo} className="flex justify-between text-sm"><span className="text-gray-600">{dojo}</span><span className="font-bold text-gray-800">{count}</span></div>) : <p className="text-sm text-gray-500 italic">Nenhum dojo registrado.</p>}
           </StatCard>
-          <StatCard title="Próximos Aniversários" icon={<BirthdayIcon />} className="sm:col-span-2">
+          <StatCard title="Próximos Aniversários" icon={<BirthdayIcon />} className="sm:col-span-2 lg:col-span-4">
               {processedData.upcomingBirthdays.length > 0 ? <ul className="space-y-2">{processedData.upcomingBirthdays.map((b) => <li key={b.id} className="flex justify-between items-center text-sm"><div className="flex items-center min-w-0"><img src={b.photo || `https://i.pravatar.cc/150?u=${b.id}`} className="w-6 h-6 rounded-full mr-2 flex-shrink-0" alt={b.fullName}/><span className="text-gray-600 truncate">{b.fullName}</span></div><span className="font-semibold text-gray-800 flex-shrink-0 ml-2">{b.date}</span></li>)}</ul> : <p className="text-sm text-gray-500 italic">Nenhum aniversário nos próximos 30 dias.</p>}
           </StatCard>
-          <StatCard title="Últimas Matrículas" icon={<NewUserIcon />} className="sm:col-span-2">
-              {processedData.latestEnrollments.length > 0 ? <ul className="space-y-2">{processedData.latestEnrollments.map(s => <li key={s.id} className="flex justify-between items-center text-sm"><div className="flex items-center"><img src={s.photo || `https://i.pravatar.cc/150?u=${s.id}`} className="w-6 h-6 rounded-full mr-2" alt={s.fullName}/><span className="text-gray-600 truncate">{s.fullName}</span></div><span className="font-semibold text-gray-500 text-xs flex-shrink-0 ml-2">{new Date(s.enrollmentDate).toLocaleDateString('pt-BR')}</span></li>)}</ul> : <p className="text-sm text-gray-500 italic">Nenhum aluno matriculado recentemente.</p>}
-          </StatCard>
-      </div>
-
-      {/* Payments and Ranks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard title="Mensalidades Pendentes" icon={<PaymentIcon />} className="md:col-span-2 lg:col-span-1">
-             {processedData.paymentsDue.length > 0 ? <ul className="space-y-2">{processedData.paymentsDue.map(s => <li key={s.id} className="flex justify-between items-center text-sm"><span className="text-gray-600 truncate">{s.fullName}</span><span className="font-semibold text-yellow-600 text-xs flex-shrink-0 ml-2">Pendente</span></li>)}</ul> : <p className="text-sm text-gray-500 italic">Nenhuma mensalidade pendente.</p>}
-          </StatCard>
-          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <StatCard title="Karate Tradicional" icon={<RankIcon />}>
-              <div className="space-y-2">{TRADITIONAL_KARATE_RANKS.map(rank => (processedData.traditionalKarateRanks[rank] > 0 && <div key={rank} className="flex justify-between items-center text-sm"><span className="text-gray-600">{rank}</span><span className="font-bold text-gray-800 bg-gray-100 rounded-full px-2 py-0.5 text-xs">{processedData.traditionalKarateRanks[rank]}</span></div>))}</div>
+          
+          <div className="sm:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard title="Mensalidades Pendentes" icon={<PaymentIcon />}>
+              {processedData.paymentsDue.length > 0 ? <ul className="space-y-2">{processedData.paymentsDue.map(s => <li key={s.id} className="flex justify-between items-center text-sm"><span className="text-gray-600 truncate">{s.fullName}</span><span className="font-semibold text-yellow-600 text-xs flex-shrink-0 ml-2">Pendente</span></li>)}</ul> : <p className="text-sm text-gray-500 italic">Nenhuma mensalidade pendente.</p>}
             </StatCard>
-            <StatCard title="Karate de Contato" icon={<RankIcon />}>
-              <div className="space-y-2">{CONTACT_KARATE_RANKS.map(rank => (processedData.contactKarateRanks[rank] > 0 && <div key={rank} className="flex justify-between items-center text-sm"><span className="text-gray-600">{rank}</span><span className="font-bold text-gray-800 bg-gray-100 rounded-full px-2 py-0.5 text-xs">{processedData.contactKarateRanks[rank]}</span></div>))}</div>
+            <StatCard title="Últimas Matrículas" icon={<NewUserIcon />}>
+                {processedData.latestEnrollments.length > 0 ? <ul className="space-y-2">{processedData.latestEnrollments.map(s => <li key={s.id} className="flex justify-between items-center text-sm"><div className="flex items-center"><img src={s.photo || `https://i.pravatar.cc/150?u=${s.id}`} className="w-6 h-6 rounded-full mr-2" alt={s.fullName}/><span className="text-gray-600 truncate">{s.fullName}</span></div><span className="font-semibold text-gray-500 text-xs flex-shrink-0 ml-2">{new Date(s.enrollmentDate).toLocaleDateString('pt-BR')}</span></li>)}</ul> : <p className="text-sm text-gray-500 italic">Nenhum aluno matriculado recentemente.</p>}
             </StatCard>
-            <StatCard title="Jiu-Jitsu" icon={<RankIcon />}>
-              <div className="space-y-2">{JIU_JITSU_RANKS.map(rank => (processedData.jiuJitsuRanks[rank] > 0 && <div key={rank} className="flex justify-between items-center text-sm"><span className="text-gray-600">{rank}</span><span className="font-bold text-gray-800 bg-gray-100 rounded-full px-2 py-0.5 text-xs">{processedData.jiuJitsuRanks[rank]}</span></div>))}</div>
+            <StatCard title="Alunos Prontos para Graduação" icon={<PromotionIcon />}>
+              {processedData.promotableStudents.length > 0 ? (
+                <ul className="space-y-3 max-h-60 overflow-y-auto">
+                  {processedData.promotableStudents.map(({ student, martialArt, currentGraduation }) => (
+                    <li key={`${student.id}-${martialArt.id}`} className="flex items-center justify-between p-2 rounded-md bg-gray-50/75 border border-gray-200">
+                      <div className="flex items-center min-w-0">
+                        <img src={student.photo || `https://i.pravatar.cc/150?u=${student.id}`} className="w-8 h-8 rounded-full mr-3 flex-shrink-0" alt={student.fullName}/>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-800 truncate">{student.fullName}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {martialArt.name}: {currentGraduation.rank} {martialArt.usesDegrees ? `(${currentGraduation.degree}º G)` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => onPromoteStudent(student.id, martialArt.id)}
+                        className="ml-4 flex-shrink-0 bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
+                      >
+                        Graduar
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500 italic">Nenhum aluno atingiu os requisitos para a próxima graduação.</p>
+              )}
             </StatCard>
           </div>
       </div>
@@ -212,9 +281,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.dojo}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
                     <div className="flex flex-col space-y-1">
-                      <div><span className="font-semibold">KT:</span> {student.traditionalKarateRank} ({student.traditionalKarateDegree}º G)</div>
-                      <div><span className="font-semibold">KC:</span> {student.contactKarateRank} ({student.contactKarateDegree}º G)</div>
-                      <div><span className="font-semibold">JJ:</span> {student.jiuJitsuRank} ({student.jiuJitsuDegree}º G)</div>
+                      {martialArts.map(ma => {
+                        const grad = student.graduations.find(g => g.martialArtId === ma.id);
+                        return (
+                          <div key={ma.id} className="flex items-center">
+                            <span className="font-semibold w-10">{ma.name.substring(0, 3).toUpperCase()}:</span>
+                            {grad ? (
+                              <div className="flex items-center ml-1">
+                                <span
+                                  className="inline-block w-3 h-3 rounded-sm mr-2"
+                                  style={getRankColorStyle(grad.rank)}
+                                ></span>
+                                <span>{grad.rank} {ma.usesDegrees ? `(${grad.degree}º G)` : ''}</span>
+                              </div>
+                            ) : (
+                              <span className="ml-2">-</span>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -223,6 +308,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ students, onRegisterNew
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Tem certeza que deseja excluir o aluno ${student.fullName}? Esta ação não pode ser desfeita.`)) {
+                          onDeleteStudent(student.id);
+                        }
+                      }}
+                      className="font-semibold text-gray-500 hover:text-red-700 transition-colors duration-150"
+                    >
+                      Excluir
+                    </button>
                     <button onClick={() => onEditStudent(student)} className="font-semibold text-gray-600 hover:text-gray-900 transition-colors duration-150">Editar</button>
                     <button onClick={() => onViewStudent(student)} className="font-semibold text-red-600 hover:text-red-800 transition-colors duration-150">Ver Detalhes</button>
                   </td>
